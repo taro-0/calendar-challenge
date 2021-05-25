@@ -2,7 +2,7 @@
   <ValidationObserver ref="form" tag="form" class="ReminderForm">
     <fieldset class="ReminderForm__body">
       <h4>Reminder</h4>
-      <ValidationProvider rules="max:30|required" v-slot="{ errors }" name="reminder">
+      <ValidationProvider v-slot="{ errors }" name="reminder">
         <div class="ReminderForm__input">
           <VSwatches
             v-model="event.color"
@@ -12,7 +12,11 @@
           <label for="">Color</label>
         </div>
       </ValidationProvider>
-      <ValidationProvider rules="max:30|required" v-slot="{ errors }" name="reminder">
+      <ValidationProvider
+        rules="max:30|required"
+        v-slot="{ errors }"
+        name="reminder"
+      >
         <div class="ReminderForm__input">
           <label for="reminder">Reminder</label>
           <input
@@ -46,27 +50,51 @@
             type="minute"
             btn-str="Ok"
             placeholder="Choose time"
-            :time-str="[ 'Hour', 'Minutes', 'Seconds' ]"
+            :time-str="['Hour', 'Minutes', 'Seconds']"
             :class="{ 'ReminderForm__input--error': errors.length > 0 }"
           />
           <span class="ReminderForm__error-message"> {{ errors[0] }}</span>
         </div>
       </ValidationProvider>
     </fieldset>
-    <button type="button" class="ReminderForm__btn">
-      Ok
-    </button>
-    <button type="button" class="ReminderForm__btn ReminderForm__btn--cancel">
+    <button type="button" class="ReminderForm__btn" @click="save()">Ok</button>
+    <button
+      type="button"
+      class="ReminderForm__btn ReminderForm__btn--cancel"
+      @click="$emit('cancel')"
+    >
       Cancel
     </button>
   </ValidationObserver>
 </template>
 <script>
 export default {
-  data: () => ({
-    event: {}
-  })
-}
+  props: {
+    value: {
+      type: Object,
+      required: true,
+    },
+  },
+  computed: {
+    event: {
+      get() {
+        return this.value;
+      },
+      set(v) {
+        this.$emit("input", v);
+      },
+    },
+  },
+  methods: {
+    async save() {
+      const valid = await this.$refs.form.validate();
+
+      if (valid) {
+        this.$emit("save", this.event);
+      }
+    },
+  },
+};
 </script>
 <style lang="postcss" scoped>
 .ReminderForm {
@@ -101,20 +129,20 @@ export default {
     &:focus {
       @apply border-blue-400;
 
-      border-bottom-width: 2px;	
+      border-bottom-width: 2px;
     }
   }
 
   &__input &__input--error {
     @apply border-red-400;
 
-    border-bottom-width: 2px;	
+    border-bottom-width: 2px;
   }
 
   label {
     @apply text-sm;
     position: absolute;
-    top: 4px
+    top: 4px;
   }
 
   h4 {
@@ -129,6 +157,6 @@ export default {
 
     border-width: 0px;
     border-bottom-width: 2px;
-  } 
+  }
 }
 </style>

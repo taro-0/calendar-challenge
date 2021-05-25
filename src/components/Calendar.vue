@@ -1,20 +1,38 @@
 <template>
   <div class="CalendarMonth">
     <header class="CalendarMonth__header">
-      <button type="button" @click="skip(-1)">prev</button>
       <h3>{{ monthName }}</h3>
-      <button type="button" @click="skip(1)">next</button>
     </header>
     <div class="CalendarMonth__body">
       <div
         v-for="(week, index) in weeks"
         :key="`${week}-${index}`"
-        class="CalendarMonth__week">
+        class="CalendarMonth__week"
+      >
         <div
-          v-for="day in week.days" :key="`${day}-${day.number}`"
+          v-for="day in week.days"
+          :key="`${day}-${day.number}`"
           :class="{ 'current-month': day.month === month.format('MM') }"
-          class="CalendarMonth__day">
+          class="CalendarMonth__day"
+          @click="$emit('day-clicked', day)"
+        >
           <span class="CalendarMonth__day-number">{{ day.number }}</span>
+          <div
+            v-for="(item, i) in getEvents(day)"
+            :key="i"
+            class="CalendarMonth__event"
+            @click.stop="$emit('edit', item)"
+          >
+            <span class="swatch" :style="{ backgroundColor: item.color }" />
+            <span>{{ item.reminder }} - {{ item.time }}</span>
+            <button
+              class="remove"
+              type="button"
+              @click.stop="requestRemove(item)"
+            >
+              x
+            </button>
+          </div>
           <slot v-bind:day="day" name="day" />
         </div>
       </div>
@@ -27,7 +45,7 @@ export default {
   data: () => ({
     start: moment().startOf("month"),
     weeks: [],
-    month: moment()
+    month: moment(),
   }),
   computed: {
     monthName() {
@@ -38,8 +56,8 @@ export default {
     events: {
       type: Array,
       required: false,
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   methods: {
     removeTime(date) {
@@ -61,13 +79,13 @@ export default {
         date.add(1, "day");
       }
 
-      return days
+      return days;
     },
     createMonth(start) {
       const date = this.removeTime(start.clone());
       this.weeks = [];
 
-      this.month = start.startOf('month')
+      this.month = start.startOf("month");
 
       let monthIndex = date.month();
       let done = false;
@@ -75,24 +93,33 @@ export default {
 
       while (!done) {
         this.weeks.push({
-          days: this.createWeek(date.clone())
-        })
+          days: this.createWeek(date.clone()),
+        });
 
-        date.add(1, 'week')
-        count += 1
-        done = count > 2 && monthIndex !== date.month()
-        monthIndex = date.month()
+        date.add(1, "week");
+        count += 1;
+        done = count > 2 && monthIndex !== date.month();
+        monthIndex = date.month();
       }
     },
     skip(steps) {
-      const next = this.start.clone()
-      this.removeTime(next.month(next.month() + steps).date(1))
-      this.month.month(this.month.month() + steps)
-      this.createMonth(next)
-    }
+      let next = this.start.clone();
+      next = next.add(steps, "months").endOf("month");
+      this.createMonth(next.startOf("month"));
+    },
+    getEvents(day) {
+      const date = day.date.format("YYYY-MM-DD");
+      this.events.sort((a, b) => a.time.localeCompare(b.time));
+      return this.events.filter((item) => item.date.isSame(date));
+    },
+    requestRemove(event) {
+      if (confirm("Are you sure you want to remove this event?")) {
+        this.$emit("remove", event);
+      }
+    },
   },
-  mounted () {
-    this.createMonth(this.start.startOf('month'))
+  mounted() {
+    this.createMonth(this.start.startOf("month"));
   },
 };
 </script>
@@ -107,7 +134,7 @@ export default {
   }
 
   &__header {
-    @apply w-full flex justify-between px-8 py-6;
+    @apply w-full flex justify-between px-8 py-6 text-center;
   }
 
   &__week {
@@ -122,12 +149,39 @@ export default {
     flex: 1;
   }
 
+  &__day-number {
+    @apply block;
+  }
+
   &__day:not(.current-month) {
     @apply bg-gray-100;
   }
 
+  &__event {
+    @apply py-2 px-1 text-sm flex items-center;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+  }
+
   h3 {
     @apply text-xl font-bold;
+  }
+
+  .swatch {
+    @apply inline-block mr-2;
+    border-radius: 4px;
+    width: 8px;
+    height: 8px;
+  }
+
+  .remove {
+    @apply bg-gray-300 text-center ml-auto box-content text-gray-600;
+
+    border-radius: 16px;
+    width: 22px;
+    height: 22px;
+    line-height: 100%;
   }
 }
 </style>

@@ -1,10 +1,19 @@
 <template>
   <div class="home">
-    <calendar />
+    <calendar
+      :events="events"
+      @day-clicked="newEvent"
+      @edit="editEvent"
+      @remove="removeEvent"
+    />
 
     <div v-if="showModal" class="home__modal">
       <div class="home__modal-body">
-        <ReminderForm />
+        <ReminderForm
+          v-model="currentEvent"
+          @save="saveEvent"
+          @cancel="hideModal"
+        />
       </div>
     </div>
   </div>
@@ -12,8 +21,9 @@
 
 <script>
 // @ is an alias to /src
+import { mapState } from "vuex";
 import Calendar from "@/components/Calendar.vue";
-import ReminderForm from "@/components/ReminderForm.vue"
+import ReminderForm from "@/components/ReminderForm.vue";
 
 export default {
   name: "Home",
@@ -22,8 +32,47 @@ export default {
     ReminderForm,
   },
   data: () => ({
-    showModal: false
-  })
+    showModal: false,
+    mode: "create",
+    currentEvent: {},
+  }),
+  computed: {
+    ...mapState({
+      events: (state) => state.events,
+    }),
+  },
+  methods: {
+    newEvent(day) {
+      this.mode = "create";
+      this.currentEvent = {
+        date: day.date,
+      };
+      this.showModal = true;
+    },
+    editEvent(event) {
+      this.currentEvent = Object.assign({}, event);
+      this.mode = "edit";
+      this.showModal = true;
+    },
+    hideModal() {
+      this.showModal = false;
+    },
+    saveEvent(event) {
+      if (this.mode === "create") {
+        this.$store.dispatch("addEvent", event);
+      }
+
+      if (this.mode === "edit") {
+        this.$store.dispatch("updateEvent", event);
+      }
+
+      this.hideModal();
+    },
+
+    removeEvent(event) {
+      this.$store.dispatch("removeEvent", event.index);
+    },
+  },
 };
 </script>
 <style lang="postcss" scoped>
