@@ -1,32 +1,17 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
     <router-view />
   </div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<style lang="postcss" scoped>
+.add-btn {
+  @apply bg-blue-500 rounded-full py-3 text-white text-4xl shadow-lg absolute text-center;
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+  width: 64px;
+  height: 64px;
+  bottom: 32px;
+  right: 32px;
+  line-height: 100%;
 }
 </style>

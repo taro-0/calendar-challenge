@@ -2,7 +2,7 @@
   <div class="CalendarMonth">
     <header class="CalendarMonth__header">
       <button type="button" @click="skip(-1)">prev</button>
-      <strong>{{ monthName }}</strong>
+      <h3>{{ monthName }}</h3>
       <button type="button" @click="skip(1)">next</button>
     </header>
     <div class="CalendarMonth__body">
@@ -107,7 +107,7 @@ export default {
   }
 
   &__header {
-    @apply w-full;
+    @apply w-full flex justify-between px-8 py-6;
   }
 
   &__week {
@@ -116,7 +116,7 @@ export default {
   }
 
   &__day {
-    @apply border-gray-100;
+    @apply border-gray-100 p-2 box-content;
 
     border-width: 0.02em;
     flex: 1;
@@ -124,6 +124,10 @@ export default {
 
   &__day:not(.current-month) {
     @apply bg-gray-100;
+  }
+
+  h3 {
+    @apply text-xl font-bold;
   }
 }
 </style>
